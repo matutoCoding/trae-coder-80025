@@ -92,11 +92,18 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, onRequeue, onViewApprov
           </View>
         )}
 
-        {ticket.status === 'missed' && (
+        {ticket.missedCount > 0 && ticket.status !== 'cancelled' && ticket.status !== 'completed' && ticket.status !== 'processing' && (
           <View className={styles.missedInfo}>
             <Text className={styles.missedText}>
               已过号 <Text style={{ color: '#F53F3F', fontWeight: 600 }}>{ticket.missedCount}</Text>/3 次
-              {ticket.missedCount >= 3 && '，号码已作废'}
+            </Text>
+          </View>
+        )}
+
+        {ticket.status === 'missed' && (
+          <View className={styles.missedInfo}>
+            <Text className={styles.missedText}>
+              请点击重新排队按钮排到队尾
             </Text>
           </View>
         )}

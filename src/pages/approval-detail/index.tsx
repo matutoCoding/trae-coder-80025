@@ -46,7 +46,7 @@ const ApprovalDetailPage: React.FC = () => {
   const completedNodes = approval.nodes.filter(n => n.status === 'approved' || n.status === 'rejected').length;
   const hasTimeout = approval.nodes.some(n => n.isTimeout);
   const totalNodes = approval.nodes.length;
-  const reminders = approvalReminders;
+  const reminderList = approvalReminders;
 
   return (
     <ScrollView className={styles.page} scrollY>
@@ -87,7 +87,7 @@ const ApprovalDetailPage: React.FC = () => {
             <Text className={styles.summaryLabel}>超时节点</Text>
           </View>
           <View className={styles.summaryItem}>
-            <Text className={styles.summaryNum}>{reminders.length}</Text>
+            <Text className={styles.summaryNum}>{reminderList.length}</Text>
             <Text className={styles.summaryLabel}>催办次数</Text>
           </View>
         </View>
@@ -162,15 +162,15 @@ const ApprovalDetailPage: React.FC = () => {
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>
           <Text className={styles.sectionIcon}>🔔</Text>
-          催办记录（{reminders.length}条）
+          催办记录（{reminderList.length}条）
         </Text>
         <View className={styles.infoCard}>
-          {reminders.length === 0 ? (
+          {reminderList.length === 0 ? (
             <View className={styles.emptyReminder}>
               <Text>暂无催办记录，审批流程正常进行</Text>
             </View>
           ) : (
-            reminders.map(r => (
+            reminderList.map(r => (
               <View
                 key={r.id}
                 className={classnames(

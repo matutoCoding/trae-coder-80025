@@ -36,8 +36,7 @@ export const mockTickets: QueueTicket[] = [
     missedCount: 0,
     createdAt: new Date(now - 25 * min).toISOString(),
     calledAt: new Date(now - 2 * min).toISOString(),
-    estimatedWaitTime: 0,
-    approvalId: 'a_002'
+    estimatedWaitTime: 0
   },
   {
     id: 't_003',
@@ -161,6 +160,24 @@ export const mockTickets: QueueTicket[] = [
     approvalId: 'a_004'
   },
   {
+    id: 't_011',
+    ticketNumber: 'A0130',
+    businessTypeId: 'biz_004',
+    businessName: '社保参保登记',
+    businessCategory: 'social',
+    customerName: '张三',
+    customerPhone: '138****1234',
+    status: 'processing',
+    queuePosition: 0,
+    aheadCount: 0,
+    windowNumber: 'A03',
+    missedCount: 0,
+    createdAt: new Date(now - 80 * min).toISOString(),
+    calledAt: new Date(now - 70 * min).toISOString(),
+    estimatedWaitTime: 0,
+    approvalId: 'a_002'
+  },
+  {
     id: 't_010',
     ticketNumber: 'C0055',
     businessTypeId: 'biz_006',
@@ -257,11 +274,11 @@ export const mockApprovals: ApprovalFlow[] = [
     ticketId: 't_002',
     ticketNumber: 'A0125',
     businessName: '养老保险转移',
-    applicantName: '李四',
+    applicantName: '张三',
     currentNodeIndex: 0,
-    overallStatus: 'pending',
-    startTime: new Date(now - 2 * min).toISOString(),
-    expectedEndTime: new Date(now + 3 * hour).toISOString(),
+    overallStatus: 'processing',
+    startTime: new Date(now - 70 * min).toISOString(),
+    expectedEndTime: new Date(now + 1 * hour).toISOString(),
     responsiblePerson: '刘主任',
     nodes: [
       {
@@ -270,9 +287,9 @@ export const mockApprovals: ApprovalFlow[] = [
         order: 1,
         handler: '陈科员',
         handlerRole: '社保窗口',
-        status: 'pending',
-        assignedAt: new Date(now - 2 * min).toISOString(),
-        timeoutAt: new Date(now + 28 * min).toISOString(),
+        status: 'processing',
+        assignedAt: new Date(now - 70 * min).toISOString(),
+        timeoutAt: new Date(now - 40 * min).toISOString(),
         isTimeout: false,
         timeoutDuration: 30,
         reminderCount: 0,

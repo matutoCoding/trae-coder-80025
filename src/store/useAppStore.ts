@@ -32,6 +32,25 @@ interface AppState {
 
 const generateId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+const reorderWindowTickets = (tickets: QueueTicket[], windowNumber: string): QueueTicket[] => {
+  const windowQueuingTickets = tickets
+    .filter(t => t.windowNumber === windowNumber && t.status === 'queuing')
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  const positionMap = new Map<string, number>();
+  windowQueuingTickets.forEach((t, idx) => {
+    positionMap.set(t.id, idx + 1);
+  });
+
+  return tickets.map(t => {
+    if (positionMap.has(t.id)) {
+      const pos = positionMap.get(t.id)!;
+      return { ...t, queuePosition: pos, aheadCount: pos - 1 };
+    }
+    return t;
+  });
+};
+
 const escalateMap: Record<string, { name: string; role: string }> = {
   '张科员': { name: '王科长', role: '科室科长' },
   '陈科员': { name: '刘科长', role: '科室科长' },
@@ -98,8 +117,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       estimatedWaitTime: queuePosition * business.estimatedTime
     };
 
+    const currentTickets = get().tickets;
+    let allTickets = [...currentTickets, newTicket];
+    allTickets = reorderWindowTickets(allTickets, business.windowNumber);
+
     set({
-      tickets: [...get().tickets, newTicket],
+      tickets: allTickets,
       ticketCounter: { ...counter, [business.category]: newCount },
       queueStats: {
         ...get().queueStats,
@@ -123,10 +146,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     if (newMissedCount >= 3) {
       console.log('[Store] requeueTicket: missed count reaches 3, cancelling ticket');
+      const updatedTickets = tickets.map(t =>
+        t.id === ticketId ? { ...t, status: 'cancelled' as const, missedCount: newMissedCount } : t
+      );
       set({
-        tickets: tickets.map(t =>
-          t.id === ticketId ? { ...t, status: 'cancelled' as const, missedCount: newMissedCount } : t
-        ),
+        tickets: updatedTickets,
         queueStats: {
           ...get().queueStats,
           totalMissed: get().queueStats.totalMissed + 1
@@ -135,26 +159,28 @@ export const useAppStore = create<AppState>((set, get) => ({
       return false;
     }
 
-    const sameWindowTickets = tickets.filter(
-      t => t.windowNumber === ticket.windowNumber && t.status === 'queuing'
+    let updatedTickets = tickets.map(t =>
+      t.id === ticketId
+        ? {
+            ...t,
+            status: 'queuing' as const,
+            missedCount: newMissedCount,
+            createdAt: new Date().toISOString()
+          }
+        : t
     );
-    const newPosition = sameWindowTickets.length + 1;
+    updatedTickets = reorderWindowTickets(updatedTickets, ticket.windowNumber);
 
     set({
-      tickets: tickets.map(t =>
-        t.id === ticketId
-          ? {
-              ...t,
-              status: 'queuing' as const,
-              queuePosition: newPosition,
-              aheadCount: newPosition - 1,
-              missedCount: newMissedCount
-            }
-          : t
-      )
+      tickets: updatedTickets,
+      queueStats: {
+        ...get().queueStats,
+        totalQueuing: get().queueStats.totalQueuing + 1
+      }
     });
 
-    console.log('[Store] requeueTicket success:', ticketId, 'new position:', newPosition, 'missedCount:', newMissedCount);
+    const updatedTicket = updatedTickets.find(t => t.id === ticketId);
+    console.log('[Store] requeueTicket success:', ticketId, 'new position:', updatedTicket?.queuePosition, 'missedCount:', newMissedCount);
     return true;
   },
 
@@ -165,10 +191,16 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const wasQueuing = ticket.status === 'queuing';
 
+    let updatedTickets = tickets.map(t =>
+      t.id === ticketId ? { ...t, status: 'cancelled' as const } : t
+    );
+
+    if (wasQueuing) {
+      updatedTickets = reorderWindowTickets(updatedTickets, ticket.windowNumber);
+    }
+
     set({
-      tickets: tickets.map(t =>
-        t.id === ticketId ? { ...t, status: 'cancelled' as const } : t
-      ),
+      tickets: updatedTickets,
       queueStats: {
         ...get().queueStats,
         totalQueuing: wasQueuing ? get().queueStats.totalQueuing - 1 : get().queueStats.totalQueuing
@@ -190,42 +222,58 @@ export const useAppStore = create<AppState>((set, get) => ({
     const newMissedCount = ticket.missedCount + 1;
     const isCancelled = newMissedCount >= 3;
 
-    const sameWindowTickets = tickets.filter(
-      t => t.windowNumber === ticket.windowNumber && t.status === 'queuing' && t.id !== ticketId
-    );
-    const newPosition = isCancelled ? 0 : sameWindowTickets.length + 1;
-
     const newCallRecord: CallRecord = {
       id: `c_${Date.now()}`,
       ticketId: ticket.id,
       ticketNumber: ticket.ticketNumber,
       windowNumber: ticket.windowNumber,
       calledAt: new Date().toISOString(),
-      result: isCancelled ? 'missed' : 'requeued'
+      result: isCancelled ? 'cancelled' : 'missed'
     };
 
-    set({
-      tickets: tickets.map(t =>
+    let updatedTickets: QueueTicket[];
+    if (isCancelled) {
+      updatedTickets = tickets.map(t =>
         t.id === ticketId
           ? {
               ...t,
-              status: isCancelled ? 'cancelled' as const : 'missed' as const,
+              status: 'cancelled' as const,
               missedCount: newMissedCount,
-              queuePosition: newPosition,
-              aheadCount: newPosition - 1,
+              queuePosition: 0,
+              aheadCount: -1,
               calledAt: new Date().toISOString()
             }
           : t
-      ),
+      );
+    } else {
+      updatedTickets = tickets.map(t =>
+        t.id === ticketId
+          ? {
+              ...t,
+              status: 'queuing' as const,
+              missedCount: newMissedCount,
+              createdAt: new Date().toISOString(),
+              calledAt: new Date().toISOString()
+            }
+          : t
+      );
+      updatedTickets = reorderWindowTickets(updatedTickets, ticket.windowNumber);
+    }
+
+    set({
+      tickets: updatedTickets,
       callRecords: [...get().callRecords, newCallRecord],
       queueStats: {
         ...get().queueStats,
         totalMissed: get().queueStats.totalMissed + 1,
-        totalQueuing: ticket.status === 'queuing' ? get().queueStats.totalQueuing - 1 : get().queueStats.totalQueuing
+        totalQueuing: isCancelled
+          ? get().queueStats.totalQueuing
+          : (ticket.status === 'calling' ? get().queueStats.totalQueuing + 1 : get().queueStats.totalQueuing)
       }
     });
 
-    console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled);
+    const updatedTicket = updatedTickets.find(t => t.id === ticketId);
+    console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'newPosition:', updatedTicket?.queuePosition);
     return true;
   },
 
@@ -365,15 +413,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
     });
 
+    set({
+      approvals: updatedApprovals,
+      reminders: newReminders.length > 0 ? [...reminders, ...newReminders] : reminders,
+      lastTimeoutCheck: now
+    });
     if (newReminders.length > 0) {
-      set({
-        approvals: updatedApprovals,
-        reminders: [...reminders, ...newReminders],
-        lastTimeoutCheck: now
-      });
       console.log('[Store] checkAndUpdateTimeouts: generated', newReminders.length, 'new reminders');
-    } else {
-      set({ lastTimeoutCheck: now });
     }
   },
 
