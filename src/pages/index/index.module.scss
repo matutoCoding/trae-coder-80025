@@ -132,6 +132,13 @@
   50% { opacity: 0.7; transform: scale(1.2); box-shadow: 0 0 0 16rpx rgba(255, 125, 0, 0); }
 }
 
+.callingEmpty {
+  font-size: 44rpx;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+  letter-spacing: 4rpx;
+}
+
 .callingActions {
   display: flex;
   gap: $spacing-md;

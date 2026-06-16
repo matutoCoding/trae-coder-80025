@@ -179,22 +179,33 @@ const IndexPage: React.FC = () => {
         </View>
 
         <View className={styles.callingNumber}>
-          <Text className={styles.callingNumberText}>{queueStats.currentCallingNumber}</Text>
-          <View className={styles.callingPulse} />
+          {queueStats.currentCallingNumber ? (
+            <>
+              <Text className={styles.callingNumberText}>{queueStats.currentCallingNumber}</Text>
+              <View className={styles.callingPulse} />
+            </>
+          ) : (
+            <Text className={styles.callingEmpty}>暂无排队</Text>
+          )}
         </View>
 
         <View className={styles.callingActions}>
-          <View
-            className={classnames(styles.callActionBtn, styles.callActionMiss)}
-            onClick={handleMarkMissed}
-          >
-            <Text className={styles.callActionBtnText}>过号处理</Text>
-          </View>
+          {queueStats.currentCallingNumber && (
+            <View
+              className={classnames(styles.callActionBtn, styles.callActionMiss)}
+              onClick={handleMarkMissed}
+            >
+              <Text className={styles.callActionBtnText}>过号处理</Text>
+            </View>
+          )}
           <View
             className={styles.callActionBtn}
+            style={!queueStats.currentCallingNumber ? { width: '100%' } : {}}
             onClick={handleCallNext}
           >
-            <Text className={styles.callActionBtnText}>下一位</Text>
+            <Text className={styles.callActionBtnText}>
+              {queueStats.currentCallingNumber ? '下一位' : '开始叫号'}
+            </Text>
           </View>
         </View>
 

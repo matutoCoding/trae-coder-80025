@@ -221,7 +221,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   markTicketMissed: (ticketId) => {
-    const tickets = get().tickets;
+    const state = get();
+    const tickets = state.tickets;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket || (ticket.status !== 'calling' && ticket.status !== 'queuing')) {
       console.error('[Store] markTicketMissed: invalid ticket', ticketId, ticket?.status);
@@ -230,6 +231,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const newMissedCount = ticket.missedCount + 1;
     const isCancelled = newMissedCount >= 3;
+    const wasCalling = ticket.status === 'calling';
 
     const newCallRecord: CallRecord = {
       id: `c_${Date.now()}`,
@@ -237,7 +239,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       ticketNumber: ticket.ticketNumber,
       windowNumber: ticket.windowNumber,
       calledAt: new Date().toISOString(),
-      result: isCancelled ? 'cancelled' : 'missed'
+      result: 'missed'
     };
 
     let updatedTickets: QueueTicket[];
@@ -269,26 +271,79 @@ export const useAppStore = create<AppState>((set, get) => ({
       updatedTickets = reorderWindowTickets(updatedTickets, ticket.windowNumber);
     }
 
-    const state = get();
-    set({
-      tickets: updatedTickets,
-      callRecords: [...state.callRecords, newCallRecord],
-      queueStats: {
-        ...state.queueStats,
-        totalMissed: state.queueStats.totalMissed + 1,
-        totalQueuing: isCancelled
-          ? state.queueStats.totalQueuing
-          : (ticket.status === 'calling' ? state.queueStats.totalQueuing + 1 : state.queueStats.totalQueuing)
+    const otherQueuingTickets = updatedTickets.filter(
+      t => t.windowNumber === ticket.windowNumber && t.status === 'queuing' && t.id !== ticketId
+    );
+
+    let newCurrentCallingNumber = '';
+    let newTotalQueuing = state.queueStats.totalQueuing;
+
+    if (!isCancelled && wasCalling) {
+      newTotalQueuing = state.queueStats.totalQueuing + 1;
+    }
+
+    if (wasCalling) {
+      if (otherQueuingTickets.length > 0) {
+        const nextTicket = otherQueuingTickets.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )[0];
+
+        updatedTickets = updatedTickets.map(t =>
+          t.id === nextTicket.id ? { ...t, status: 'calling' as const, calledAt: new Date().toISOString() } : t
+        );
+        newCurrentCallingNumber = nextTicket.ticketNumber;
+
+        const nextCallRecord: CallRecord = {
+          id: `c_${Date.now()}_next`,
+          ticketId: nextTicket.id,
+          ticketNumber: nextTicket.ticketNumber,
+          windowNumber: ticket.windowNumber,
+          calledAt: new Date().toISOString(),
+          result: 'arrived'
+        };
+
+        const queuingAdjust = isCancelled ? 0 : 1;
+
+        set({
+          tickets: updatedTickets,
+          callRecords: [...state.callRecords, newCallRecord, nextCallRecord],
+          queueStats: {
+            ...state.queueStats,
+            totalMissed: state.queueStats.totalMissed + 1,
+            totalQueuing: newTotalQueuing - queuingAdjust,
+            currentCallingNumber: newCurrentCallingNumber,
+            windowNumber: ticket.windowNumber
+          }
+        });
+
+        console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'called next:', nextTicket.ticketNumber);
+      } else {
+        set({
+          tickets: updatedTickets,
+          callRecords: [...state.callRecords, newCallRecord],
+          queueStats: {
+            ...state.queueStats,
+            totalMissed: state.queueStats.totalMissed + 1,
+            totalQueuing: newTotalQueuing,
+            currentCallingNumber: '',
+            windowNumber: ticket.windowNumber
+          }
+        });
+
+        console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'no next ticket, calling cleared');
       }
-    });
+    } else {
+      set({
+        tickets: updatedTickets,
+        callRecords: [...state.callRecords, newCallRecord],
+        queueStats: {
+          ...state.queueStats,
+          totalMissed: state.queueStats.totalMissed + 1,
+          totalQueuing: newTotalQueuing
+        }
+      });
 
-    const updatedTicket = updatedTickets.find(t => t.id === ticketId);
-    console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'newPosition:', updatedTicket?.queuePosition);
-
-    if (ticket.status === 'calling') {
-      setTimeout(() => {
-        get().callNextTicket(ticket.windowNumber);
-      }, 100);
+      console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'not calling status');
     }
 
     return !isCancelled;
