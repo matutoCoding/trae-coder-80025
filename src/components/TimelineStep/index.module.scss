@@ -1,0 +1,207 @@
+@use '@/styles/variables.scss' as *;
+
+.step {
+  display: flex;
+  padding-bottom: $spacing-xl;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: $spacing-lg;
+  width: 40rpx;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background: $color-bg-page;
+  border: 3rpx solid $color-text-disabled;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: all $transition-base;
+}
+
+.dotActive {
+  box-shadow: 0 0 0 8rpx rgba(46, 125, 255, 0.15);
+  transform: scale(1.1);
+}
+
+.dotDone {
+  border: none;
+}
+
+.dotPending {
+  background: $color-bg-card;
+}
+
+.dotTimeout {
+  animation: blink 1.5s infinite;
+  border: none;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 63, 63, 0.5); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 10rpx rgba(245, 63, 63, 0); }
+}
+
+.dotIcon {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.line {
+  width: 3rpx;
+  flex: 1;
+  background: $color-border;
+  margin-top: $spacing-xs;
+}
+
+.lineDone {
+  background: $color-success;
+}
+
+.rightColumn {
+  flex: 1;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.04);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.order {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background: rgba(30, 92, 191, 0.1);
+  color: $color-primary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+  margin-right: $spacing-sm;
+}
+
+.handlerInfo {
+  margin-bottom: $spacing-sm;
+}
+
+.handler {
+  display: flex;
+  align-items: baseline;
+}
+
+.label {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.value {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.role {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timeInfo {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-sm;
+}
+
+.timeLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timeoutWarning {
+  display: flex;
+  align-items: center;
+  background: rgba(245, 63, 63, 0.08);
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.timeoutIcon {
+  margin-right: 8rpx;
+  font-size: $font-size-sm;
+}
+
+.timeoutText {
+  font-size: $font-size-xs;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.escalationInfo {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 125, 0, 0.08);
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.escalationIcon {
+  margin-right: 8rpx;
+  color: $color-warning;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-md;
+}
+
+.escalationText {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.commentBox {
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+}
+
+.commentLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.comment {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: 4rpx;
+  line-height: 1.6;
+}

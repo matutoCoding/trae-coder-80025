@@ -1,0 +1,264 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-md 32rpx 120rpx;
+}
+
+.headerCard {
+  background: linear-gradient(135deg, #FF4D4F 0%, #FF7A45 50%, #FF7D00 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -80rpx;
+    left: -40rpx;
+    width: 240rpx;
+    height: 240rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
+}
+
+.headerTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-xs;
+  position: relative;
+  z-index: 1;
+}
+
+.headerSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.statRow {
+  display: flex;
+  margin-top: $spacing-xl;
+  position: relative;
+  z-index: 1;
+}
+
+.statCol {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-md 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-md;
+  margin: 0 8rpx;
+  backdrop-filter: blur(10px);
+}
+
+.statNum {
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+  margin-top: 4rpx;
+}
+
+.unreadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 18rpx;
+  background: $color-text-white;
+  color: #FF4D4F;
+  font-size: 22rpx;
+  font-weight: $font-weight-bold;
+  margin-left: 8rpx;
+  position: relative;
+  top: -4rpx;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tabItem {
+  flex: 1;
+  min-width: 120rpx;
+  height: 72rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+  padding: 0 $spacing-sm;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.tabItemActive {
+  background: linear-gradient(135deg, #FF4D4F 0%, #FF7A45 100%);
+  color: $color-text-white;
+  box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.25);
+}
+
+.filterBar {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.filterChip {
+  padding: 8rpx $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  border: 1rpx solid $color-border;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.filterChipActive {
+  background: rgba(30, 92, 191, 0.1);
+  color: $color-primary;
+  border-color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 120rpx 32rpx;
+}
+
+.emptyIcon {
+  width: 160rpx;
+  height: 160rpx;
+  margin: 0 auto $spacing-lg;
+  background: $color-bg-page;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80rpx;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.summarySection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.summaryTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.personList {
+  display: flex;
+  flex-direction: column;
+}
+
+.personItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.personAvatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-md;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.personInfo {
+  flex: 1;
+}
+
+.personName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.personRole {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.personStats {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.personStat {
+  text-align: right;
+}
+
+.personStatNum {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.personStatLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-top: 2rpx;
+}
+
+.statRed {
+  color: $color-error;
+}
+
+.statOrange {
+  color: $color-warning;
+}

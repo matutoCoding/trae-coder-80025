@@ -1,0 +1,110 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg 0;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemCompact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+  transition: all $transition-base;
+  width: 100%;
+
+  &:active {
+    transform: scale(0.96);
+    background: $color-bg-hover;
+  }
+}
+
+.icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+
+.itemCompact .icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-sm;
+}
+
+.iconText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.itemCompact .iconText {
+  font-size: $font-size-xxl;
+}
+
+.info {
+  flex: 1;
+  margin-left: $spacing-lg;
+  overflow: hidden;
+}
+
+.itemCompact .info {
+  margin-left: 0;
+  text-align: center;
+  width: 100%;
+}
+
+.name {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  line-height: 1.4;
+  @include text-ellipsis;
+}
+
+.itemCompact .name {
+  font-size: $font-size-sm;
+  text-align: center;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-xs;
+}
+
+.metaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.sep {
+  margin: 0 $spacing-sm;
+  color: $color-text-tertiary;
+  font-size: $font-size-xs;
+}
+
+.arrow {
+  font-size: 48rpx;
+  color: $color-text-tertiary;
+  line-height: 1;
+  margin-left: $spacing-sm;
+}

@@ -1,0 +1,237 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 160rpx;
+}
+
+.ticketHeader {
+  background: linear-gradient(135deg, #1E5CBF 0%, #2E7DFF 100%);
+  padding: 48rpx 32rpx 80rpx;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    right: -80rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
+}
+
+.ticketNumberRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+  position: relative;
+  z-index: 1;
+}
+
+.ticketNumber {
+  font-size: 72rpx;
+  font-weight: $font-weight-bold;
+  letter-spacing: 6rpx;
+  font-family: 'DIN', 'Arial Narrow', sans-serif;
+  line-height: 1;
+}
+
+.windowBadge {
+  padding: 6rpx 20rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  backdrop-filter: blur(10px);
+}
+
+.businessName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.metaRow {
+  display: flex;
+  gap: $spacing-lg;
+  font-size: $font-size-xs;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.mainCard {
+  margin: -40rpx 32rpx 0;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  padding: $spacing-xl;
+  position: relative;
+  z-index: 2;
+}
+
+.queueStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: $spacing-md 0;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.queueStat {
+  text-align: center;
+  padding: 0 $spacing-md;
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 1rpx;
+    background: $color-border;
+  }
+}
+
+.queueNum {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.queueNumWarn {
+  color: $color-warning;
+}
+
+.queueLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.infoSection {
+  padding: 0 32rpx;
+  margin-top: $spacing-xl;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.infoCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-right: $spacing-lg;
+}
+
+.infoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  text-align: right;
+  flex: 1;
+  word-break: break-all;
+}
+
+.missedWarning {
+  margin: $spacing-md 32rpx 0;
+  padding: $spacing-md $spacing-lg;
+  background: rgba(245, 63, 63, 0.08);
+  border-radius: $radius-md;
+  display: flex;
+  align-items: flex-start;
+}
+
+.warningIcon {
+  margin-right: $spacing-sm;
+  font-size: $font-size-md;
+  flex-shrink: 0;
+}
+
+.warningText {
+  font-size: $font-size-sm;
+  color: $color-error;
+  line-height: 1.6;
+}
+
+.timeline {
+  padding: $spacing-sm 0;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md 32rpx;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  box-shadow: 0 6rpx 16rpx rgba(30, 92, 191, 0.3);
+}
+
+.btnSecondary {
+  background: $color-warning;
+  color: $color-text-white;
+  box-shadow: 0 6rpx 16rpx rgba(255, 125, 0, 0.25);
+}
+
+.btnGhost {
+  background: $color-bg-page;
+  color: $color-text-secondary;
+}

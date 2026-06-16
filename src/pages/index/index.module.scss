@@ -1,0 +1,236 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+.hero {
+  background: linear-gradient(135deg, #1E5CBF 0%, #2E7DFF 100%);
+  padding: 48rpx 32rpx 80rpx;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    right: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -120rpx;
+    left: -60rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+  }
+}
+
+.heroTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-bottom: $spacing-xs;
+  position: relative;
+  z-index: 1;
+}
+
+.heroSubtitle {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  position: relative;
+  z-index: 1;
+}
+
+.callingBoard {
+  margin: -48rpx 32rpx 0;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  position: relative;
+  z-index: 2;
+}
+
+.boardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.boardIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, #FF7D00 0%, #FF9933 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  box-shadow: 0 6rpx 16rpx rgba(255, 125, 0, 0.3);
+}
+
+.boardIconText {
+  font-size: 36rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+}
+
+.boardInfo {
+  flex: 1;
+}
+
+.boardLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.boardWindow {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.callingNumber {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: $spacing-lg 0;
+  background: linear-gradient(135deg, rgba(255, 125, 0, 0.08) 0%, rgba(255, 153, 51, 0.04) 100%);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.callingNumberText {
+  font-size: 88rpx;
+  font-weight: $font-weight-bold;
+  color: $color-warning;
+  letter-spacing: 8rpx;
+  font-family: 'DIN', 'Arial Narrow', sans-serif;
+}
+
+.callingPulse {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: $radius-round;
+  background: $color-warning;
+  margin-left: $spacing-md;
+  animation: callingPulse 1.2s infinite;
+}
+
+@keyframes callingPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 125, 0, 0.7); }
+  50% { opacity: 0.7; transform: scale(1.2); box-shadow: 0 0 0 16rpx rgba(255, 125, 0, 0); }
+}
+
+.statsRow {
+  display: flex;
+  margin: 0 -8rpx;
+}
+
+.statItem {
+  flex: 1;
+  padding: $spacing-md;
+  margin: 0 8rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  text-align: center;
+}
+
+.statNum {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.statNumGreen {
+  color: $color-success;
+}
+
+.statNumOrange {
+  color: $color-warning;
+}
+
+.statNumRed {
+  color: $color-error;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.avgTime {
+  text-align: center;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.avgTimeText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.avgTimeNum {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.section {
+  padding: 0 32rpx;
+  margin-top: $spacing-xl;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  display: flex;
+  align-items: center;
+}
+
+.businessGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+}
+
+.quickTicket {
+  margin-top: $spacing-md;
+}
+
+.recentSection {
+  padding: 0 32rpx;
+  margin-top: $spacing-xl;
+}
+
+.emptyHint {
+  text-align: center;
+  padding: $spacing-xl;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}

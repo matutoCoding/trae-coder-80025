@@ -1,0 +1,181 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-md 0 60rpx;
+}
+
+.categoryTabs {
+  display: flex;
+  padding: 0 32rpx;
+  margin-bottom: $spacing-md;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: $spacing-sm;
+}
+
+.categoryTab {
+  padding: $spacing-sm $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: inline-flex;
+  align-items: center;
+  border: 1rpx solid $color-border;
+  transition: all $transition-base;
+  flex-shrink: 0;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.categoryTabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-color: transparent;
+  font-weight: $font-weight-medium;
+  box-shadow: 0 4rpx 12rpx rgba(30, 92, 191, 0.25);
+}
+
+.categoryDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  margin-right: 8rpx;
+  flex-shrink: 0;
+}
+
+.businessList {
+  padding: 0 32rpx;
+}
+
+.businessCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  border-left: 6rpx solid $color-primary;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.06);
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.businessIcon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.businessIconText {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.businessInfo {
+  flex: 1;
+}
+
+.businessName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.categoryBadge {
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  font-weight: $font-weight-normal;
+}
+
+.businessDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  @include text-ellipsis-multi(2);
+}
+
+.metaSection {
+  display: flex;
+  gap: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.metaBlock {
+  flex: 1;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+}
+
+.metaLabel {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.metaValue {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.takeBtn {
+  margin-top: $spacing-md;
+  height: $button-height-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 4rpx 12rpx rgba(30, 92, 191, 0.25);
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.97);
+    opacity: 0.95;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 100rpx 32rpx;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

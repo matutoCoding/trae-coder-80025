@@ -1,0 +1,93 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-info;
+  transition: all $transition-base;
+  position: relative;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.cardUnread {
+  background: linear-gradient(135deg, #F5F9FF 0%, #FFFFFF 60%);
+}
+
+.cardCritical {
+  border-left-color: $color-error;
+  background: linear-gradient(135deg, #FFF5F3 0%, #FFFFFF 60%);
+}
+
+.unreadDot {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background: $color-error;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  padding-right: $spacing-xl;
+}
+
+.escalationBadge {
+  margin-left: $spacing-sm;
+  padding: 4rpx 12rpx;
+  background: rgba(255, 125, 0, 0.1);
+  border-radius: $radius-xs;
+  border: 1rpx solid rgba(255, 125, 0, 0.3);
+}
+
+.escalationText {
+  font-size: 20rpx;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.content {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: 1.6;
+  margin-bottom: $spacing-md;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.receiver {
+  display: flex;
+  align-items: baseline;
+}
+
+.receiverName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.receiverRole {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.time {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

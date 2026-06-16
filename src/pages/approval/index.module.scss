@@ -1,0 +1,252 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-md 32rpx 120rpx;
+}
+
+.headerCard {
+  background: linear-gradient(135deg, #1E5CBF 0%, #2E7DFF 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80rpx;
+    right: -40rpx;
+    width: 240rpx;
+    height: 240rpx;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+  }
+}
+
+.headerTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-xs;
+  position: relative;
+  z-index: 1;
+}
+
+.headerSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+  position: relative;
+  z-index: 1;
+}
+
+.headerStats {
+  display: flex;
+  margin-top: $spacing-xl;
+  position: relative;
+  z-index: 1;
+}
+
+.headerStat {
+  flex: 1;
+  text-align: center;
+}
+
+.headerStatNum {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.headerStatNumWarn {
+  color: #FFD591;
+}
+
+.headerStatNumError {
+  color: #FFB4B4;
+}
+
+.headerStatLabel {
+  font-size: $font-size-xs;
+  opacity: 0.85;
+  margin-top: 4rpx;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.tabItem {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.tabItemActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  box-shadow: 0 4rpx 12rpx rgba(30, 92, 191, 0.25);
+}
+
+.approvalCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  border-left: 6rpx solid $color-primary;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.approvalCardTimeout {
+  border-left-color: $color-error;
+  background: linear-gradient(135deg, #FFF5F3 0%, #FFFFFF 60%);
+}
+
+.approvalCardPending {
+  border-left-color: $color-text-disabled;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.approvalTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.applicant {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.progressBar {
+  display: flex;
+  margin: $spacing-md 0;
+  gap: 4rpx;
+}
+
+.progressStep {
+  flex: 1;
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: $color-bg-hover;
+}
+
+.progressStepDone {
+  background: $color-success;
+}
+
+.progressStepActive {
+  background: $color-warning;
+}
+
+.progressStepTimeout {
+  background: $color-error;
+}
+
+.nodeRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $spacing-sm;
+}
+
+.nodeInfo {
+  display: flex;
+  align-items: center;
+}
+
+.nodeDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  margin-right: 8rpx;
+}
+
+.nodeName {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.timeRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.timeItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.timeValue {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-top: 4rpx;
+}
+
+.timeValueWarning {
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.timeValueError {
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 120rpx 32rpx;
+}
+
+.emptyIcon {
+  width: 160rpx;
+  height: 160rpx;
+  margin: 0 auto $spacing-lg;
+  background: $color-bg-page;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80rpx;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
