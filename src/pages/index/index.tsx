@@ -17,11 +17,11 @@ const IndexPage: React.FC = () => {
   const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
   const getCurrentCallingTicket = useAppStore(state => state.getCurrentCallingTicket);
   const markTicketMissed = useAppStore(state => state.markTicketMissed);
+  const callNextTicket = useAppStore(state => state.callNextTicket);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedBiz, setSelectedBiz] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [showMissedConfirm, setShowMissedConfirm] = useState(false);
 
   useDidShow(() => {
     checkAndUpdateTimeouts();
@@ -82,20 +82,82 @@ const IndexPage: React.FC = () => {
   };
 
   const handleMarkMissed = () => {
-    setShowMissedConfirm(true);
+    if (!currentCallingTicket) return;
+    const nextCount = currentCallingTicket.missedCount + 1;
+    const willCancel = nextCount >= 3;
+
+    const content = willCancel
+      ? '⚠️ 这是第3次过号，确认后号码将立即作废！'
+      : `确定将 ${currentCallingTicket.ticketNumber} 记为过号？\n\n记为过号后，此号码将自动排到队尾，过号次数变为 ${nextCount}/3。连续过号3次，号码将自动作废。`;
+
+    Taro.showModal({
+      title: '过号确认',
+      content,
+      confirmText: willCancel ? '确认作废' : '确认过号',
+      cancelText: '取消',
+      confirmColor: willCancel ? '#F53F3F' : '#FF7D00',
+      success: (res) => {
+        if (res.confirm) {
+          const result = markTicketMissed(currentCallingTicket.id);
+          if (result) {
+            Taro.showToast({
+              title: '已记为过号',
+              icon: 'success'
+            });
+          } else {
+            Taro.showToast({
+              title: '号码已作废',
+              icon: 'none',
+              duration: 2000
+            });
+          }
+          console.log('[IndexPage] 叫号过号处理:', currentCallingTicket.ticketNumber, 'cancelled:', !result);
+        }
+      }
+    });
   };
 
-  const confirmMarkMissed = () => {
-    if (!currentCallingTicket) return;
-    const result = markTicketMissed(currentCallingTicket.id);
-    setShowMissedConfirm(false);
-    if (result) {
-      Taro.showToast({
-        title: '已记为过号',
-        icon: 'success'
-      });
-      console.log('[IndexPage] 叫号过号处理:', currentCallingTicket.ticketNumber);
+  const handleCallNext = () => {
+    if (!queueStats.currentCallingNumber) {
+      const nextTicket = callNextTicket();
+      if (nextTicket) {
+        Taro.showToast({
+          title: `已叫号：${nextTicket.ticketNumber}`,
+          icon: 'success'
+        });
+      } else {
+        Taro.showToast({
+          title: '暂无排队号码',
+          icon: 'none'
+        });
+      }
+      return;
     }
+
+    Taro.showModal({
+      title: '叫号确认',
+      content: `当前叫号 ${queueStats.currentCallingNumber} 已到窗口，确认叫下一位？`,
+      confirmText: '确认叫号',
+      cancelText: '取消',
+      confirmColor: '#1E5CBF',
+      success: (res) => {
+        if (res.confirm) {
+          const nextTicket = callNextTicket();
+          if (nextTicket) {
+            Taro.showToast({
+              title: `已叫号：${nextTicket.ticketNumber}`,
+              icon: 'success'
+            });
+            console.log('[IndexPage] 叫下一位:', nextTicket.ticketNumber);
+          } else {
+            Taro.showToast({
+              title: '暂无排队号码',
+              icon: 'none'
+            });
+          }
+        }
+      }
+    });
   };
 
   return (
@@ -128,7 +190,10 @@ const IndexPage: React.FC = () => {
           >
             <Text className={styles.callActionBtnText}>过号处理</Text>
           </View>
-          <View className={styles.callActionBtn}>
+          <View
+            className={styles.callActionBtn}
+            onClick={handleCallNext}
+          >
             <Text className={styles.callActionBtnText}>下一位</Text>
           </View>
         </View>
@@ -210,14 +275,7 @@ const IndexPage: React.FC = () => {
         />
       )}
 
-      {showMissedConfirm && (
-        <MissedConfirmModal
-          ticketNumber={queueStats.currentCallingNumber}
-          windowNumber={queueStats.windowNumber}
-          onCancel={() => setShowMissedConfirm(false)}
-          onConfirm={confirmMarkMissed}
-        />
-      )}
+
     </ScrollView>
   );
 };
@@ -342,121 +400,6 @@ const TakeTicketModal: React.FC<TakeTicketModalProps> = ({ business, onCancel, o
             }}
           >
             确认取号
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-interface MissedConfirmModalProps {
-  ticketNumber: string;
-  windowNumber: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}
-
-const MissedConfirmModal: React.FC<MissedConfirmModalProps> = ({ ticketNumber, windowNumber, onCancel, onConfirm }) => {
-  return (
-    <View
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0,0,0,0.5)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0 48rpx'
-      }}
-      onClick={onCancel}
-    >
-      <View
-        style={{
-          background: '#fff',
-          borderRadius: '24rpx',
-          width: '100%',
-          maxWidth: '654rpx',
-          padding: '48rpx 40rpx 40rpx'
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <View style={{ textAlign: 'center', marginBottom: '32rpx' }}>
-          <View
-            style={{
-              width: '96rpx',
-              height: '96rpx',
-              borderRadius: '50%',
-              margin: '0 auto 20rpx',
-              background: 'linear-gradient(135deg, #FF7D00 0%, #FF9A2E 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8rpx 20rpx rgba(255, 125, 0, 0.3)'
-            }}
-          >
-            <Text style={{ fontSize: '44rpx', color: '#fff' }}>!</Text>
-          </View>
-          <Text style={{ fontSize: '36rpx', fontWeight: 600, color: '#1d2129', display: 'block', marginBottom: '8rpx' }}>
-            过号确认
-          </Text>
-          <Text style={{ fontSize: '28rpx', color: '#4e5969' }}>
-            确定将 <Text style={{ color: '#F53F3F', fontWeight: 600 }}>{ticketNumber}</Text> 记为过号？
-          </Text>
-        </View>
-
-        <View
-          style={{
-            background: '#FFF7E8',
-            borderRadius: '16rpx',
-            padding: '24rpx',
-            marginBottom: '32rpx',
-            border: '2rpx solid #FFE0A3'
-          }}
-        >
-          <Text style={{ fontSize: '26rpx', color: '#FF7D00', lineHeight: '40rpx' }}>
-            ⚠️ 记为过号后，此号码将自动排到队尾，过号次数+1。连续过号3次，号码将自动作废。
-          </Text>
-        </View>
-
-        <View style={{ display: 'flex', gap: '24rpx' }}>
-          <View
-            onClick={onCancel}
-            style={{
-              flex: 1,
-              height: '88rpx',
-              borderRadius: '48rpx',
-              background: '#F2F3F5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28rpx',
-              color: '#4e5969',
-              fontWeight: 500
-            }}
-          >
-            取消
-          </View>
-          <View
-            onClick={onConfirm}
-            style={{
-              flex: 1,
-              height: '88rpx',
-              borderRadius: '48rpx',
-              background: 'linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28rpx',
-              color: '#fff',
-              fontWeight: 500,
-              boxShadow: '0 6rpx 16rpx rgba(245, 63, 63, 0.3)'
-            }}
-          >
-            确认过号
           </View>
         </View>
       </View>

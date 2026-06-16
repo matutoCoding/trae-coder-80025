@@ -28,24 +28,33 @@ interface AppState {
   checkAndUpdateTimeouts: () => void;
   getCurrentCallingTicket: () => QueueTicket | undefined;
   getUnreadReminderCount: () => number;
+  callNextTicket: (windowNumber?: string) => QueueTicket | null;
 }
 
 const generateId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+const getBusinessEstimatedTime = (businessTypeId: string): number => {
+  const business = businessTypes.find(b => b.id === businessTypeId);
+  return business?.estimatedTime || 15;
+};
 
 const reorderWindowTickets = (tickets: QueueTicket[], windowNumber: string): QueueTicket[] => {
   const windowQueuingTickets = tickets
     .filter(t => t.windowNumber === windowNumber && t.status === 'queuing')
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-  const positionMap = new Map<string, number>();
+  const positionMap = new Map<string, { pos: number; waitTime: number }>();
   windowQueuingTickets.forEach((t, idx) => {
-    positionMap.set(t.id, idx + 1);
+    const pos = idx + 1;
+    const estimatedTime = getBusinessEstimatedTime(t.businessTypeId);
+    const waitTime = pos * estimatedTime;
+    positionMap.set(t.id, { pos, waitTime });
   });
 
   return tickets.map(t => {
-    if (positionMap.has(t.id)) {
-      const pos = positionMap.get(t.id)!;
-      return { ...t, queuePosition: pos, aheadCount: pos - 1 };
+    const info = positionMap.get(t.id);
+    if (info) {
+      return { ...t, queuePosition: info.pos, aheadCount: info.pos - 1, estimatedWaitTime: info.waitTime };
     }
     return t;
   });
@@ -260,21 +269,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       updatedTickets = reorderWindowTickets(updatedTickets, ticket.windowNumber);
     }
 
+    const state = get();
     set({
       tickets: updatedTickets,
-      callRecords: [...get().callRecords, newCallRecord],
+      callRecords: [...state.callRecords, newCallRecord],
       queueStats: {
-        ...get().queueStats,
-        totalMissed: get().queueStats.totalMissed + 1,
+        ...state.queueStats,
+        totalMissed: state.queueStats.totalMissed + 1,
         totalQueuing: isCancelled
-          ? get().queueStats.totalQueuing
-          : (ticket.status === 'calling' ? get().queueStats.totalQueuing + 1 : get().queueStats.totalQueuing)
+          ? state.queueStats.totalQueuing
+          : (ticket.status === 'calling' ? state.queueStats.totalQueuing + 1 : state.queueStats.totalQueuing)
       }
     });
 
     const updatedTicket = updatedTickets.find(t => t.id === ticketId);
     console.log('[Store] markTicketMissed:', ticketId, 'missedCount:', newMissedCount, 'cancelled:', isCancelled, 'newPosition:', updatedTicket?.queuePosition);
-    return true;
+
+    if (ticket.status === 'calling') {
+      setTimeout(() => {
+        get().callNextTicket(ticket.windowNumber);
+      }, 100);
+    }
+
+    return !isCancelled;
   },
 
   getMyTickets: () => {
@@ -430,5 +447,88 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   getUnreadReminderCount: () => {
     return get().reminders.filter(r => !r.read).length;
+  },
+
+  callNextTicket: (windowNumber) => {
+    const state = get();
+    const tickets = state.tickets;
+    const stats = state.queueStats;
+
+    const targetWindow = windowNumber || stats.windowNumber;
+    const currentCalling = tickets.find(t => t.status === 'calling' && t.windowNumber === targetWindow);
+
+    let updatedTickets = [...tickets];
+    const now = new Date();
+    const newCallRecords: CallRecord[] = [];
+
+    if (currentCalling) {
+      updatedTickets = updatedTickets.map(t =>
+        t.id === currentCalling.id
+          ? { ...t, status: 'processing' as const, calledAt: now.toISOString() }
+          : t
+      );
+      newCallRecords.push({
+        id: `c_${Date.now()}_1`,
+        ticketId: currentCalling.id,
+        ticketNumber: currentCalling.ticketNumber,
+        windowNumber: targetWindow,
+        calledAt: now.toISOString(),
+        result: 'arrived'
+      });
+    }
+
+    const windowQueuingTickets = updatedTickets
+      .filter(t => t.windowNumber === targetWindow && t.status === 'queuing')
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    if (windowQueuingTickets.length === 0) {
+      console.log('[Store] callNextTicket: no queuing tickets for window', targetWindow);
+      if (currentCalling) {
+        set({
+          tickets: updatedTickets,
+          callRecords: [...state.callRecords, ...newCallRecords],
+          queueStats: {
+            ...state.queueStats,
+            totalProcessing: state.queueStats.totalProcessing + 1,
+            currentCallingNumber: '',
+          }
+        });
+      }
+      return null;
+    }
+
+    const nextTicket = windowQueuingTickets[0];
+
+    updatedTickets = updatedTickets.map(t =>
+      t.id === nextTicket.id
+        ? { ...t, status: 'calling' as const, calledAt: now.toISOString() }
+        : t
+    );
+
+    updatedTickets = reorderWindowTickets(updatedTickets, targetWindow);
+
+    newCallRecords.push({
+      id: `c_${Date.now()}_2`,
+      ticketId: nextTicket.id,
+      ticketNumber: nextTicket.ticketNumber,
+      windowNumber: targetWindow,
+      calledAt: now.toISOString(),
+      result: 'arrived'
+    });
+
+    set({
+      tickets: updatedTickets,
+      callRecords: [...state.callRecords, ...newCallRecords],
+      queueStats: {
+        ...state.queueStats,
+        currentCallingNumber: nextTicket.ticketNumber,
+        windowNumber: targetWindow,
+        totalProcessing: currentCalling ? state.queueStats.totalProcessing + 1 : state.queueStats.totalProcessing,
+        totalQueuing: state.queueStats.totalQueuing - 1
+      }
+    });
+
+    console.log('[Store] callNextTicket: called', nextTicket.ticketNumber, 'for window', targetWindow);
+    return nextTicket;
   }
 }));
