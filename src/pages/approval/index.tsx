@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import { ApprovalFlow, ApprovalStatus } from '@/types';
 import StatusBadge from '@/components/StatusBadge';
@@ -19,10 +19,16 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const ApprovalPage: React.FC = () => {
-  const { approvals } = useAppStore();
+  const approvals = useAppStore(state => state.approvals);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
 
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
+
   usePullDownRefresh(() => {
+    checkAndUpdateTimeouts();
     setTimeout(() => Taro.stopPullDownRefresh(), 600);
   });
 

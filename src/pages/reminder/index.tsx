@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import { ReminderLevel } from '@/types';
 import ReminderCard from '@/components/ReminderCard';
@@ -25,11 +25,19 @@ const LEVEL_FILTERS = [
 ];
 
 const ReminderPage: React.FC = () => {
-  const { reminders, approvals, markReminderRead } = useAppStore();
+  const reminders = useAppStore(state => state.reminders);
+  const approvals = useAppStore(state => state.approvals);
+  const markReminderRead = useAppStore(state => state.markReminderRead);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [levelFilter, setLevelFilter] = useState('all');
 
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
+
   usePullDownRefresh(() => {
+    checkAndUpdateTimeouts();
     setTimeout(() => Taro.stopPullDownRefresh(), 600);
   });
 

@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import { businessTypes, categoryColors, categoryNames } from '@/data/businessTypes';
 import BusinessItem from '@/components/BusinessItem';
@@ -9,13 +9,27 @@ import styles from './index.module.scss';
 import classnames from 'classnames';
 
 const IndexPage: React.FC = () => {
-  const { queueStats, getMyTickets, createTicket, currentUser } = useAppStore();
+  const tickets = useAppStore(state => state.tickets);
+  const queueStats = useAppStore(state => state.queueStats);
+  const createTicket = useAppStore(state => state.createTicket);
+  const currentUser = useAppStore(state => state.currentUser);
+  const getMyTickets = useAppStore(state => state.getMyTickets);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
+  const getCurrentCallingTicket = useAppStore(state => state.getCurrentCallingTicket);
+  const markTicketMissed = useAppStore(state => state.markTicketMissed);
+
   const [showModal, setShowModal] = useState(false);
   const [selectedBiz, setSelectedBiz] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showMissedConfirm, setShowMissedConfirm] = useState(false);
+
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
 
   usePullDownRefresh(() => {
     setRefreshing(true);
+    checkAndUpdateTimeouts();
     setTimeout(() => {
       setRefreshing(false);
       Taro.stopPullDownRefresh();
@@ -28,7 +42,11 @@ const IndexPage: React.FC = () => {
 
   const myRecentTickets = useMemo(() => {
     return getMyTickets().slice(0, 3);
-  }, [getMyTickets]);
+  }, [getMyTickets, tickets]);
+
+  const currentCallingTicket = useMemo(() => {
+    return getCurrentCallingTicket();
+  }, [getCurrentCallingTicket, tickets]);
 
   const handleBusinessClick = (bizId: string) => {
     const biz = businessTypes.find(b => b.id === bizId);
@@ -63,6 +81,23 @@ const IndexPage: React.FC = () => {
     });
   };
 
+  const handleMarkMissed = () => {
+    setShowMissedConfirm(true);
+  };
+
+  const confirmMarkMissed = () => {
+    if (!currentCallingTicket) return;
+    const result = markTicketMissed(currentCallingTicket.id);
+    setShowMissedConfirm(false);
+    if (result) {
+      Taro.showToast({
+        title: '已记为过号',
+        icon: 'success'
+      });
+      console.log('[IndexPage] 叫号过号处理:', currentCallingTicket.ticketNumber);
+    }
+  };
+
   return (
     <ScrollView className={styles.page} scrollY>
       <View className={styles.hero}>
@@ -84,6 +119,18 @@ const IndexPage: React.FC = () => {
         <View className={styles.callingNumber}>
           <Text className={styles.callingNumberText}>{queueStats.currentCallingNumber}</Text>
           <View className={styles.callingPulse} />
+        </View>
+
+        <View className={styles.callingActions}>
+          <View
+            className={classnames(styles.callActionBtn, styles.callActionMiss)}
+            onClick={handleMarkMissed}
+          >
+            <Text className={styles.callActionBtnText}>过号处理</Text>
+          </View>
+          <View className={styles.callActionBtn}>
+            <Text className={styles.callActionBtnText}>下一位</Text>
+          </View>
         </View>
 
         <View className={styles.statsRow}>
@@ -160,6 +207,15 @@ const IndexPage: React.FC = () => {
           business={businessTypes.find(b => b.id === selectedBiz)}
           onCancel={() => { setShowModal(false); setSelectedBiz(null); }}
           onConfirm={handleConfirmTakeTicket}
+        />
+      )}
+
+      {showMissedConfirm && (
+        <MissedConfirmModal
+          ticketNumber={queueStats.currentCallingNumber}
+          windowNumber={queueStats.windowNumber}
+          onCancel={() => setShowMissedConfirm(false)}
+          onConfirm={confirmMarkMissed}
         />
       )}
     </ScrollView>
@@ -286,6 +342,121 @@ const TakeTicketModal: React.FC<TakeTicketModalProps> = ({ business, onCancel, o
             }}
           >
             确认取号
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+interface MissedConfirmModalProps {
+  ticketNumber: string;
+  windowNumber: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+const MissedConfirmModal: React.FC<MissedConfirmModalProps> = ({ ticketNumber, windowNumber, onCancel, onConfirm }) => {
+  return (
+    <View
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 48rpx'
+      }}
+      onClick={onCancel}
+    >
+      <View
+        style={{
+          background: '#fff',
+          borderRadius: '24rpx',
+          width: '100%',
+          maxWidth: '654rpx',
+          padding: '48rpx 40rpx 40rpx'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <View style={{ textAlign: 'center', marginBottom: '32rpx' }}>
+          <View
+            style={{
+              width: '96rpx',
+              height: '96rpx',
+              borderRadius: '50%',
+              margin: '0 auto 20rpx',
+              background: 'linear-gradient(135deg, #FF7D00 0%, #FF9A2E 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8rpx 20rpx rgba(255, 125, 0, 0.3)'
+            }}
+          >
+            <Text style={{ fontSize: '44rpx', color: '#fff' }}>!</Text>
+          </View>
+          <Text style={{ fontSize: '36rpx', fontWeight: 600, color: '#1d2129', display: 'block', marginBottom: '8rpx' }}>
+            过号确认
+          </Text>
+          <Text style={{ fontSize: '28rpx', color: '#4e5969' }}>
+            确定将 <Text style={{ color: '#F53F3F', fontWeight: 600 }}>{ticketNumber}</Text> 记为过号？
+          </Text>
+        </View>
+
+        <View
+          style={{
+            background: '#FFF7E8',
+            borderRadius: '16rpx',
+            padding: '24rpx',
+            marginBottom: '32rpx',
+            border: '2rpx solid #FFE0A3'
+          }}
+        >
+          <Text style={{ fontSize: '26rpx', color: '#FF7D00', lineHeight: '40rpx' }}>
+            ⚠️ 记为过号后，此号码将自动排到队尾，过号次数+1。连续过号3次，号码将自动作废。
+          </Text>
+        </View>
+
+        <View style={{ display: 'flex', gap: '24rpx' }}>
+          <View
+            onClick={onCancel}
+            style={{
+              flex: 1,
+              height: '88rpx',
+              borderRadius: '48rpx',
+              background: '#F2F3F5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '28rpx',
+              color: '#4e5969',
+              fontWeight: 500
+            }}
+          >
+            取消
+          </View>
+          <View
+            onClick={onConfirm}
+            style={{
+              flex: 1,
+              height: '88rpx',
+              borderRadius: '48rpx',
+              background: 'linear-gradient(135deg, #F53F3F 0%, #FF7D00 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '28rpx',
+              color: '#fff',
+              fontWeight: 500,
+              boxShadow: '0 6rpx 16rpx rgba(245, 63, 63, 0.3)'
+            }}
+          >
+            确认过号
           </View>
         </View>
       </View>

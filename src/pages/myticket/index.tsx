@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { usePullDownRefresh } from '@tarojs/taro';
+import Taro, { usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
-import { TicketStatus } from '@/types';
 import TicketCard from '@/components/TicketCard';
 import styles from './index.module.scss';
 import classnames from 'classnames';
@@ -17,14 +16,27 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const MyTicketPage: React.FC = () => {
-  const { getMyTickets, requeueTicket, currentUser, tickets } = useAppStore();
+  const tickets = useAppStore(state => state.tickets);
+  const currentUser = useAppStore(state => state.currentUser);
+  const requeueTicket = useAppStore(state => state.requeueTicket);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
+
   const [activeTab, setActiveTab] = useState<TabKey>('all');
 
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
+
   usePullDownRefresh(() => {
+    checkAndUpdateTimeouts();
     setTimeout(() => Taro.stopPullDownRefresh(), 600);
   });
 
-  const myTickets = useMemo(() => getMyTickets(), [getMyTickets, tickets]);
+  const myTickets = useMemo(() => {
+    return tickets
+      .filter(t => t.customerName === currentUser.name || t.customerPhone === currentUser.phone)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [tickets, currentUser]);
 
   const filteredTickets = useMemo(() => {
     switch (activeTab) {
@@ -57,11 +69,22 @@ const MyTicketPage: React.FC = () => {
   }, [myTickets]);
 
   const handleRequeue = (ticketId: string) => {
+    const ticket = myTickets.find(t => t.id === ticketId);
+    const nextCount = ticket ? ticket.missedCount + 1 : 1;
+    const willCancel = nextCount >= 3;
+
+    const content = willCancel
+      ? '⚠️ 这是第3次过号，确认重新排队后号码将立即作废！'
+      : `确定要将此号码重新排到队尾吗？过号次数将变为 ${nextCount}/3。连续过号3次将作废。`;
+
+    const confirmColor = willCancel ? '#F53F3F' : '#1E5CBF';
+
     Taro.showModal({
       title: '重新排队',
-      content: '确定要将此号码重新排到队尾吗？过号次数会累计，连续过号3次将作废。',
+      content,
       confirmText: '确认',
       cancelText: '取消',
+      confirmColor,
       success: (res) => {
         if (res.confirm) {
           const result = requeueTicket(ticketId);
@@ -69,7 +92,11 @@ const MyTicketPage: React.FC = () => {
             Taro.showToast({ title: '已重新排队', icon: 'success' });
             console.log('[MyTicketPage] 重新排队成功:', ticketId);
           } else {
-            Taro.showToast({ title: '号码已作废，无法重新排队', icon: 'none' });
+            Taro.showToast({ title: '号码已作废', icon: 'none', duration: 2000 });
+            console.log('[MyTicketPage] 号码已作废:', ticketId);
+            setTimeout(() => {
+              setActiveTab('history');
+            }, 1000);
           }
         }
       }

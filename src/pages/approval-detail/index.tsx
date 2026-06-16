@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import StatusBadge from '@/components/StatusBadge';
 import TimelineStep from '@/components/TimelineStep';
@@ -16,12 +16,21 @@ import classnames from 'classnames';
 const ApprovalDetailPage: React.FC = () => {
   const router = useRouter();
   const approvalId = router.params.id as string;
-  const { getApprovalById, getRemindersByApproval } = useAppStore();
+  const approvals = useAppStore(state => state.approvals);
+  const reminders = useAppStore(state => state.reminders);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
+  const markReminderRead = useAppStore(state => state.markReminderRead);
 
-  const approval = useMemo(() => getApprovalById(approvalId), [approvalId, getApprovalById]);
-  const reminders = useMemo(
-    () => getRemindersByApproval(approvalId),
-    [approvalId, getRemindersByApproval]
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
+
+  const approval = useMemo(() => approvals.find(a => a.id === approvalId), [approvals, approvalId]);
+  const approvalReminders = useMemo(
+    () => reminders
+      .filter(r => r.approvalId === approvalId)
+      .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()),
+    [reminders, approvalId]
   );
 
   if (!approval) {
@@ -37,7 +46,7 @@ const ApprovalDetailPage: React.FC = () => {
   const completedNodes = approval.nodes.filter(n => n.status === 'approved' || n.status === 'rejected').length;
   const hasTimeout = approval.nodes.some(n => n.isTimeout);
   const totalNodes = approval.nodes.length;
-  const totalDuration = approval.expectedEndTime;
+  const reminders = approvalReminders;
 
   return (
     <ScrollView className={styles.page} scrollY>

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, Button } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import { businessTypes } from '@/data/businessTypes';
 import StatusBadge from '@/components/StatusBadge';
@@ -11,9 +11,16 @@ import classnames from 'classnames';
 const TicketDetailPage: React.FC = () => {
   const router = useRouter();
   const ticketId = router.params.id as string;
-  const { getTicketById, requeueTicket, cancelTicket } = useAppStore();
+  const tickets = useAppStore(state => state.tickets);
+  const requeueTicket = useAppStore(state => state.requeueTicket);
+  const cancelTicket = useAppStore(state => state.cancelTicket);
+  const checkAndUpdateTimeouts = useAppStore(state => state.checkAndUpdateTimeouts);
 
-  const ticket = useMemo(() => getTicketById(ticketId), [ticketId, getTicketById]);
+  useDidShow(() => {
+    checkAndUpdateTimeouts();
+  });
+
+  const ticket = useMemo(() => tickets.find(t => t.id === ticketId), [tickets, ticketId]);
   const business = useMemo(
     () => ticket ? businessTypes.find(b => b.id === ticket.businessTypeId) : undefined,
     [ticket]
@@ -30,9 +37,21 @@ const TicketDetailPage: React.FC = () => {
   }
 
   const handleRequeue = () => {
+    const nextCount = ticket.missedCount + 1;
+    const willCancel = nextCount >= 3;
+
+    const content = willCancel
+      ? '⚠️ 这是第3次过号，确认重新排队后号码将立即作废！'
+      : `确定要重新排到队尾吗？过号次数将变为 ${nextCount}/3。连续过号3次将作废。`;
+
+    const confirmColor = willCancel ? '#F53F3F' : '#1E5CBF';
+
     Taro.showModal({
       title: '重新排队',
-      content: `确定要重新排到队尾吗？当前已过号${ticket.missedCount}次，累计过号3次将作废。`,
+      content,
+      confirmText: '确认',
+      cancelText: '取消',
+      confirmColor,
       success: (res) => {
         if (res.confirm) {
           const result = requeueTicket(ticket.id);
@@ -40,7 +59,8 @@ const TicketDetailPage: React.FC = () => {
             Taro.showToast({ title: '已重新排队', icon: 'success' });
             console.log('[TicketDetail] 重新排队成功:', ticket.id);
           } else {
-            Taro.showToast({ title: '号码已作废', icon: 'none' });
+            Taro.showToast({ title: '号码已作废', icon: 'none', duration: 2000 });
+            console.log('[TicketDetail] 号码已作废:', ticket.id);
           }
         }
       }
